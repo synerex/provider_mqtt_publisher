@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 
 	"github.com/golang/protobuf/proto"
@@ -18,6 +19,7 @@ var (
 	nodesrv         = flag.String("nodesrv", "127.0.0.1:9990", "Node ID Server")
 	topic           = flag.String("topic", "", "MQTT Topic")
 	mes             = flag.String("message", "", "Message")
+	jsonFile        = flag.String("json", "", "message JSON file")
 	sxServerAddress string
 )
 
@@ -36,7 +38,7 @@ func sendMQTTmessage(client *sxutil.SXServiceClient, tpc *string, msg *string) {
 	}
 	_, nerr := client.NotifySupply(&smo)
 	if nerr != nil { // connection failuer with current client
-		log.Printf("Connection failure", nerr)
+		log.Printf("Connection failure: %v", nerr)
 	}
 }
 
@@ -59,7 +61,18 @@ func main() {
 	argJSON := fmt.Sprintf("{Clt:MQTT-Pub}")
 	sclient := sxutil.NewSXServiceClient(client, pbase.MQTT_GATEWAY_SVC, argJSON)
 
-	sendMQTTmessage(sclient, topic, mes)
+	if *jsonFile != "" {
+		bytes, err := ioutil.ReadFile(*jsonFile)
+		if err != nil {
+			log.Fatal("Can't open file:", *jsonFile)
+		} else {
+			message := string(bytes)
+			sendMQTTmessage(sclient, topic, &message)
+		}
+
+	} else {
+		sendMQTTmessage(sclient, topic, mes)
+	}
 
 	sxutil.CallDeferFunctions() // cleanup!
 
