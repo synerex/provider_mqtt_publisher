@@ -19,7 +19,7 @@ var (
 	nodesrv         = flag.String("nodesrv", "127.0.0.1:9990", "Node ID Server")
 	topic           = flag.String("topic", "", "MQTT Topic")
 	mes             = flag.String("message", "", "Message")
-	jsonFile        = flag.String("json", "", "message JSON file")
+	mFile           = flag.String("mfile", "", "message file")
 	sxServerAddress string
 )
 
@@ -61,10 +61,10 @@ func main() {
 	argJSON := fmt.Sprintf("{Clt:MQTT-Pub}")
 	sclient := sxutil.NewSXServiceClient(client, pbase.MQTT_GATEWAY_SVC, argJSON)
 
-	if *jsonFile != "" {
-		bytes, err := ioutil.ReadFile(*jsonFile)
+	if *mFile != "" {
+		bytes, err := ioutil.ReadFile(*mFile)
 		if err != nil {
-			log.Fatal("Can't open file:", *jsonFile)
+			log.Fatal("Can't open file:", *mFile)
 		} else {
 			message := string(bytes)
 			sendMQTTmessage(sclient, topic, &message)
